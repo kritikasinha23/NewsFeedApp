@@ -6,32 +6,45 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var loadingView: UIActivityIndicatorView!
     @IBOutlet weak var newsTableView: UITableView!
-    
+    private let refreshControl = UIRefreshControl()
     var articleModel : ArticlesModel?
     
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if #available(iOS 10.0, *) {
+            newsTableView.refreshControl = refreshControl
+        } else {
+            newsTableView.addSubview(refreshControl)
+        }
+        refreshControl.addTarget(self, action: #selector(refreshWeatherData(_:)), for: .valueChanged)
         // Do any additional setup after loading the view.
         fetchData()
     }
     
+    @objc private func refreshWeatherData(_ sender: Any) {
+        // Fetch Weather Data
+        fetchData()
+    }
     func fetchData() {
         
         self.startShowLoadingAnimation()
         NetworkService.shared.readData(completion: { news, error in
-            if let errorVal = error {
-                print(errorVal.localizedDescription)
-                return
-            }
-            guard let dataArray = news else {
-                print("unable to fetch data")
-                return
-            }
-            self.articleModel = dataArray
             DispatchQueue.main.async {
                 self.stopLoadingAnimation()
+                self.refreshControl.endRefreshing()
+                if let errorVal = error {
+                    print(errorVal.localizedDescription)
+                    return
+                }
+                guard let dataArray = news else {
+                    print("unable to fetch data")
+                    return
+                }
+                self.articleModel = dataArray
+                
+                
                 self.newsTableView.reloadData()
             }
         }, fromURLStr: "https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=763537cab3ad430da1e281d41fb2d44f")
@@ -61,9 +74,12 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let article = articleModel?.articles[indexPath.row]
+        guard let article = articleModel?.articles[indexPath.row] else {
+            return
+        }
         let storyboard2 = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard2.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
+        vc.articleInfo = article
         self.navigationController?.pushViewController(vc, animated: true)
         
     }
