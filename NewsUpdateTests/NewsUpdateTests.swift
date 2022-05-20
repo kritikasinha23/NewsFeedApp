@@ -1,9 +1,3 @@
-//
-//  NewsUpdateTests.swift
-//  NewsUpdateTests
-//
-//  Created by kritika sinha on 20/05/22.
-//
 
 import XCTest
 @testable import NewsUpdate
