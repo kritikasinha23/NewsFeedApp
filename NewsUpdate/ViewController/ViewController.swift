@@ -6,11 +6,11 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var loadingView: UIActivityIndicatorView!
     @IBOutlet weak var newsTableView: UITableView!
+    
     private let refreshControl = UIRefreshControl()
+    
     var articleModel : ArticlesModel?
     
-    
-
     override func viewDidLoad() {
         super.viewDidLoad()
         if #available(iOS 10.0, *) {
@@ -30,7 +30,7 @@ class ViewController: UIViewController {
     func fetchData() {
         
         self.startShowLoadingAnimation()
-        NetworkService.shared.readData(completion: { news, error in
+        NetworkService.shared.readData(fromURLStr: "https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=763537cab3ad430da1e281d41fb2d44f", type: ArticlesModel.self, completion: { news, error in
             DispatchQueue.main.async {
                 self.stopLoadingAnimation()
                 self.refreshControl.endRefreshing()
@@ -47,7 +47,7 @@ class ViewController: UIViewController {
                 
                 self.newsTableView.reloadData()
             }
-        }, fromURLStr: "https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=763537cab3ad430da1e281d41fb2d44f")
+        })
     }
 
 
@@ -59,7 +59,6 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        //let newsData = articleModel.articles[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "newsCell", for: indexPath) as! NewsTableViewCell
         guard let article = articleModel?.articles[indexPath.row] else {
             return cell

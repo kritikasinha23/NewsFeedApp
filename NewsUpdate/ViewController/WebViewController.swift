@@ -12,7 +12,6 @@ class WebViewController: UIViewController {
             print("unable to load the url")
             return
         }
-//        print(url)
         let request = URLRequest(url: url)
         webView.load(request)
         // Do any additional setup after loading the view.

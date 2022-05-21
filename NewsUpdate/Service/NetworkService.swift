@@ -7,17 +7,22 @@
 
 import Foundation
 
+enum ArticlesError : Error{
+    case invalidUrlError
+    case networkError
+    case jsonConversionError
+    case emptyResponseError
+}
 
 class NetworkService {
     
-    private init(){
-        
-    }
+    
     static let shared : NetworkService = NetworkService()
-    func readData(completion : @escaping (_ news: ArticlesModel?, _ error: Error?)->Void, fromURLStr : String) {
+    func readData<T: Codable>(fromURLStr : String,type: T.Type, completion : @escaping (_ news: T?, _ error: ArticlesError?)->Void) {
         
         guard let url : URL = URL(string: fromURLStr) else {
             print("Unable to create url from string -->> \(fromURLStr)")
+            completion(nil, ArticlesError.invalidUrlError)
             return
         }
         
@@ -27,33 +32,11 @@ class NetworkService {
             
             if let errorExist = error {
                 print(errorExist.localizedDescription)
-                completion(nil, error)
+                completion(nil, ArticlesError.networkError)
                 return
             }
-            if let response = urlResponse as? HTTPURLResponse {
-                
-                if let responseData = data {
-                    
-                    let resultStr = String(data: responseData, encoding: .utf8)
-                    print(resultStr)
-                
-                do {
-                    let dataArray : ArticlesModel = try JSONDecoder().decode(ArticlesModel.self, from: responseData)
-                    completion(dataArray,nil)
-                } catch let error {
-                    completion(nil,error)
-                    print("Error isoccured \(error.localizedDescription)")
-                }
-                    
-                }
-                else {
-                    print("No data")
-                    completion(nil, nil)
-                }
-            
-        }
-            
-
+            let jsonParser = JsonResponseParser()
+            jsonParser.convertJson(data: data, type: T.self, completion: completion)
         }
         session.resume()
         
