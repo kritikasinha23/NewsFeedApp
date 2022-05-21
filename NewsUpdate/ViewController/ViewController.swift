@@ -18,12 +18,12 @@ class ViewController: UIViewController {
         } else {
             newsTableView.addSubview(refreshControl)
         }
-        refreshControl.addTarget(self, action: #selector(refreshWeatherData(_:)), for: .valueChanged)
+        refreshControl.addTarget(self, action: #selector(refreshData(_:)), for: .valueChanged)
         // Do any additional setup after loading the view.
         fetchData()
     }
     
-    @objc private func refreshWeatherData(_ sender: Any) {
+    @objc private func refreshData(_ sender: Any) {
         // Fetch Weather Data
         fetchData()
     }
